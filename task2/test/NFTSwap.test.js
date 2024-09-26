@@ -20,8 +20,8 @@ describe("NFTSwap", function () {
     await nftSwap.waitForDeployment();
   });
 
-  describe("上架NFT", function () {
-    it("应该能成功上架NFT", async function () {
+  describe("List NFT", function () {
+    it("should successfully list an NFT", async function () {
       await myNFT.mintNFT(addr1.address, "");
       await myNFT.connect(addr1).approve(await nftSwap.getAddress(), 1);
 
@@ -34,7 +34,7 @@ describe("NFTSwap", function () {
       expect(order.price).to.equal(ethers.parseEther("1"));
     });
 
-    it("上架价格为0时应该失败", async function () {
+    it("should fail when listing price is 0", async function () {
       await myNFT.mintNFT(addr1.address, "");
       await myNFT.connect(addr1).approve(await nftSwap.getAddress(), 1);
   
@@ -43,14 +43,14 @@ describe("NFTSwap", function () {
     });
   });
 
-  describe("撤销上架", function () {
+  describe("Revoke listing", function () {
     beforeEach(async function () {
       await myNFT.mintNFT(addr1.address, "");
       await myNFT.connect(addr1).approve(await nftSwap.getAddress(), 1);
       await nftSwap.connect(addr1).list(await myNFT.getAddress(), 1, ethers.parseEther("1"));
     });
 
-    it("应该能成功撤销上架", async function () {
+    it("should successfully revoke a listing", async function () {
       await expect(nftSwap.connect(addr1).revoke(await myNFT.getAddress(), 1))
         .to.emit(nftSwap, "Revoke")
         .withArgs(addr1.address, await myNFT.getAddress(), 1);
@@ -60,20 +60,20 @@ describe("NFTSwap", function () {
       expect(order.price).to.equal(0);
     });
 
-    it("非所有者撤销上架应该失败", async function () {
+    it("should fail when non-owner tries to revoke a listing", async function () {
       await expect(nftSwap.connect(addr2).revoke(await myNFT.getAddress(), 1))
         .to.be.revertedWith("Not Owner");
     });
   });
 
-  describe("更新价格", function () {
+  describe("Update price", function () {
     beforeEach(async function () {
       await myNFT.mintNFT(addr1.address, "");
       await myNFT.connect(addr1).approve(await nftSwap.getAddress(), 1);
       await nftSwap.connect(addr1).list(await myNFT.getAddress(), 1, ethers.parseEther("1"));
     });
 
-    it("应该能成功更新价格", async function () {
+    it("should successfully update the price", async function () {
       await expect(nftSwap.connect(addr1).update(await myNFT.getAddress(), 1, ethers.parseEther("2")))
         .to.emit(nftSwap, "Update")
         .withArgs(addr1.address, await myNFT.getAddress(), 1, ethers.parseEther("2"));
@@ -82,12 +82,12 @@ describe("NFTSwap", function () {
       expect(order.price).to.equal(ethers.parseEther("2"));
     });
 
-    it("非所有者更新价格应该失败", async function () {
+    it("should fail when non-owner tries to update the price", async function () {
       await expect(nftSwap.connect(addr2).update(await myNFT.getAddress(), 1, ethers.parseEther("2")))
         .to.be.revertedWith("Not Owner");
     });
 
-    it("更新价格为0应该失败", async function () {
+    it("should fail when updating price to 0", async function () {
       await expect(nftSwap.connect(addr1).update(await myNFT.getAddress(), 1, 0))
         .to.be.revertedWith("Invalid Price");
     });
